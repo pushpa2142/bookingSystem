@@ -1,0 +1,100 @@
+<div class="booking-page">
+  <div class="page-header">
+    <h1 class="page-title">{{ isEditMode ? '✏️ Edit Booking' : '🎫 Book Your Seat' }}</h1>
+    <p class="page-subtitle">Select your travel date, enter mobile number, and pick seats</p>
+  </div>
+
+  <div class="booking-layout">
+    <!-- Form Panel -->
+    <div class="form-panel card">
+      <form [formGroup]="bookingForm" (ngSubmit)="onSubmit()" novalidate>
+
+        <!-- Travel Date -->
+        <div class="form-group">
+          <label class="form-label" for="travelDate">Travel Date *</label>
+          <input
+            id="travelDate"
+            type="date"
+            formControlName="travelDate"
+            [min]="today"
+            class="form-input"
+            [class.error]="f['travelDate'].invalid && f['travelDate'].touched">
+          <span class="error-msg" *ngIf="f['travelDate'].invalid && f['travelDate'].touched">
+            Travel date is required.
+          </span>
+        </div>
+
+        <!-- Mobile Number -->
+        <div class="form-group">
+          <label class="form-label" for="mobile">Mobile Number *</label>
+          <input
+            id="mobile"
+            type="tel"
+            formControlName="mobileNumber"
+            placeholder="e.g. 9876543210"
+            maxlength="10"
+            class="form-input"
+            (blur)="onMobileChange()"
+            [class.error]="f['mobileNumber'].invalid && f['mobileNumber'].touched">
+          <span class="error-msg" *ngIf="f['mobileNumber'].errors?.['required'] && f['mobileNumber'].touched">
+            Mobile number is required.
+          </span>
+          <span class="error-msg" *ngIf="f['mobileNumber'].errors?.['pattern'] && f['mobileNumber'].touched">
+            Enter a valid 10-digit mobile number (starts with 6–9).
+          </span>
+          <span class="hint" *ngIf="f['mobileNumber'].valid && f['travelDate'].valid">
+            You can book up to <strong>{{ maxSelectable }}</strong> more seat(s) for this date.
+          </span>
+        </div>
+
+        <!-- Error Message -->
+        <div class="alert-error" *ngIf="errorMessage">
+          ⚠️ {{ errorMessage }}
+        </div>
+
+        <!-- Seat Count -->
+        <div class="seat-count-info" *ngIf="selectedSeats.length > 0">
+          <span class="count-badge">{{ selectedSeats.length }}</span>
+          seat(s) selected
+        </div>
+
+        <!-- Submit -->
+        <button
+          type="submit"
+          class="btn-primary submit-btn"
+          [disabled]="isLoading || selectedSeats.length === 0">
+          <span *ngIf="!isLoading">
+            {{ isEditMode ? '💾 Update Booking' : '✅ Confirm Booking' }}
+          </span>
+          <span *ngIf="isLoading">Processing...</span>
+        </button>
+
+        <button type="button" class="btn-secondary cancel-btn" routerLink="/bookings"
+          *ngIf="isEditMode">
+          Cancel
+        </button>
+      </form>
+    </div>
+
+    <!-- Seat Layout Panel -->
+    <div class="seat-panel card">
+      <h3 class="panel-title">Select Seats</h3>
+      <p class="panel-hint" *ngIf="!f['travelDate'].value">
+        Please select a travel date first.
+      </p>
+      <app-seat-layout
+        *ngIf="f['travelDate'].value"
+        [bookedSeats]="bookedSeats"
+        [preSelectedSeats]="preSelectedSeats"
+        [maxSelectable]="maxSelectable"
+        (selectionChanged)="onSeatSelectionChanged($event)">
+      </app-seat-layout>
+    </div>
+  </div>
+</div>
+
+<!-- Confirmation Modal -->
+<app-confirmation-modal
+  [booking]="confirmedBooking"
+  (closed)="onModalClosed()">
+</app-confirmation-modal>
