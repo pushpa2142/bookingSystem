@@ -1,0 +1,31 @@
+<div class="modal-overlay" *ngIf="booking" (click)="close()">
+  <div class="modal-card" (click)="$event.stopPropagation()">
+    <div class="modal-icon">✅</div>
+    <h2 class="modal-title">Booking Confirmed!</h2>
+
+    <div class="booking-details">
+      <div class="detail-row">
+        <span class="label">Booking ID</span>
+        <span class="value booking-id">{{ booking.bookingId }}</span>
+      </div>
+      <div class="detail-row">
+        <span class="label">Travel Date</span>
+        <span class="value">{{ booking.travelDate | date: 'dd MMM yyyy' }}</span>
+      </div>
+      <div class="detail-row">
+        <span class="label">Mobile</span>
+        <span class="value">{{ booking.mobileNumber }}</span>
+      </div>
+      <div class="detail-row">
+        <span class="label">Seats</span>
+        <span class="value seats">
+          <span class="seat-badge" *ngFor="let s of booking.selectedSeats">{{ s }}</span>
+        </span>
+      </div>
+    </div>
+
+    <button class="btn-primary close-btn" (click)="close()">
+      Done
+    </button>
+  </div>
+</div>

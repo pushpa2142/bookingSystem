@@ -1,0 +1,129 @@
+<div class="list-page">
+  <div class="page-header">
+    <div class="header-left">
+      <h1 class="page-title">📋 Booking List & Boarding</h1>
+      <p class="page-subtitle">Track passengers and manage boarding</p>
+    </div>
+    <button class="btn-primary new-btn" routerLink="/book">+ New Booking</button>
+  </div>
+
+  <!-- Date Filter -->
+  <div class="filter-bar card">
+    <label class="form-label">Filter by Travel Date</label>
+    <input
+      type="date"
+      [(ngModel)]="selectedDate"
+      (change)="onDateChange()"
+      class="form-input date-input">
+  </div>
+
+  <!-- No bookings -->
+  <div class="empty-state card" *ngIf="bookings.length === 0">
+    <div class="empty-icon">🚌</div>
+    <p>No bookings found for <strong>{{ selectedDate | date: 'dd MMM yyyy' }}</strong></p>
+    <button class="btn-primary" routerLink="/book">Book Now</button>
+  </div>
+
+  <!-- Booking Table -->
+  <div class="table-wrapper card" *ngIf="bookings.length > 0">
+    <div class="table-header">
+      <h3>{{ bookings.length }} Booking(s) on {{ selectedDate | date: 'dd MMM yyyy' }}</h3>
+      <button class="btn-secondary sequence-btn" (click)="toggleSequenceView()">
+        {{ showSequenceView ? '📋 Table View' : '🏃 Boarding Sequence' }}
+      </button>
+    </div>
+
+    <!-- Regular Table View -->
+    <div class="responsive-table" *ngIf="!showSequenceView">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Booking ID</th>
+            <th>Seats</th>
+            <th>Mobile</th>
+            <th>Board</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let booking of bookings; let i = index"
+              [class]="'row-' + booking.boardingStatus.toLowerCase()">
+            <td class="seq-num">{{ i + 1 }}</td>
+            <td>
+              <span class="booking-id">{{ booking.bookingId }}</span>
+            </td>
+            <td>
+              <div class="seat-tags">
+                <span class="tag" *ngFor="let s of booking.selectedSeats">{{ s }}</span>
+              </div>
+            </td>
+            <td>
+              <div class="mobile-cell">
+                <span>{{ booking.mobileNumber }}</span>
+                <button class="call-btn" (click)="callPassenger(booking.mobileNumber)"
+                  title="Call passenger" aria-label="Call passenger">
+                  📞
+                </button>
+              </div>
+            </td>
+            <td>
+              <div class="boarding-cell">
+                <button
+                  [class]="getBoardingClass(booking.boardingStatus)"
+                  [disabled]="isBoardingDisabled(booking.boardingStatus)"
+                  (click)="markBoarding(booking.bookingId)">
+                  {{ getBoardingLabel(booking.boardingStatus) }}
+                </button>
+                <!-- Progress bar during settling -->
+                <div class="progress-bar" *ngIf="booking.boardingStatus === BoardingStatus.SETTLING">
+                  <div class="progress-fill"
+                    [style.width.%]="getSettlingProgress(booking.bookingId)"></div>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class="action-btns">
+                <button class="btn-icon edit" (click)="editBooking(booking.bookingId)"
+                  title="Edit" [disabled]="booking.boardingStatus === BoardingStatus.BOARDED">✏️</button>
+                <button class="btn-icon delete" (click)="deleteBooking(booking.bookingId)"
+                  title="Cancel booking">🗑️</button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Optimal Boarding Sequence View -->
+    <div class="sequence-view" *ngIf="showSequenceView">
+      <div class="sequence-info">
+        <div class="algo-badge">⚡ Optimal Boarding Algorithm</div>
+        <p class="algo-desc">
+          Passengers board from the <strong>back to front</strong> (highest row → lowest row),
+          minimizing blocking. Total boarding time is minimized to <strong>60 seconds</strong>
+          regardless of passenger count (no blocking occurs).
+        </p>
+      </div>
+      <div class="sequence-cards">
+        <div class="seq-card" *ngFor="let item of boardingSequence"
+          [class]="'status-' + item.boardingStatus.toLowerCase()">
+          <div class="seq-number">{{ item.sequence }}</div>
+          <div class="seq-details">
+            <div class="seq-booking-id">{{ item.bookingId }}</div>
+            <div class="seq-seats">
+              <span class="tag" *ngFor="let s of item.seats">{{ s }}</span>
+            </div>
+            <div class="seq-mobile">📱 {{ item.mobile }}</div>
+          </div>
+          <div class="seq-status">
+            <span class="status-badge" [class]="item.boardingStatus.toLowerCase()">
+              {{ item.boardingStatus === BoardingStatus.BOARDED ? '✓ Boarded' :
+                 item.boardingStatus === BoardingStatus.SETTLING ? '⏳ Settling' : '⏸ Waiting' }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
