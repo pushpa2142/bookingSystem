@@ -1,0 +1,68 @@
+<div class="seat-layout-container">
+  <!-- Legend -->
+  <div class="legend">
+    <div class="legend-item"><span class="seat available"></span> Available</div>
+    <div class="legend-item"><span class="seat selected"></span> Selected</div>
+    <div class="legend-item"><span class="seat booked"></span> Booked</div>
+  </div>
+
+  <!-- Column Headers -->
+  <div class="bus-wrapper">
+    <div class="bus-front">
+      <span class="driver-icon">🚌 Front</span>
+    </div>
+
+    <div class="col-headers">
+      <div class="col-labels left">
+        <span>A</span><span>B</span>
+      </div>
+      <div class="aisle-spacer"></div>
+      <div class="col-labels right">
+        <span>C</span><span>D</span>
+      </div>
+    </div>
+
+    <!-- Rows -->
+    <div class="seat-grid">
+      <div class="seat-row" *ngFor="let row of rows; let i = index">
+        <span class="row-number">{{ i + 1 }}</span>
+
+        <!-- Left pair: A, B -->
+        <div class="seat-pair left">
+          <button
+            *ngFor="let seat of getLeftPair(row)"
+            [class]="getSeatClass(seat)"
+            [disabled]="seat.status === 'BOOKED'"
+            (click)="toggleSeat(seat)"
+            [title]="seat.id"
+            [attr.aria-label]="'Seat ' + seat.id + ' - ' + seat.status">
+            {{ seat.id }}
+          </button>
+        </div>
+
+        <!-- Aisle -->
+        <div class="aisle"></div>
+
+        <!-- Right pair: C, D -->
+        <div class="seat-pair right">
+          <button
+            *ngFor="let seat of getRightPair(row)"
+            [class]="getSeatClass(seat)"
+            [disabled]="seat.status === 'BOOKED'"
+            (click)="toggleSeat(seat)"
+            [title]="seat.id"
+            [attr.aria-label]="'Seat ' + seat.id + ' - ' + seat.status">
+            {{ seat.id }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="selection-summary" *ngIf="selectedSeats.length > 0">
+      <strong>Selected ({{ selectedSeats.length }}/{{ maxSelectable }}):</strong>
+      <span class="seat-tags">
+        <span class="tag" *ngFor="let s of selectedSeats">{{ s }}</span>
+      </span>
+    </div>
+  </div>
+</div>
